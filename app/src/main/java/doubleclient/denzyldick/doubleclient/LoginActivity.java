@@ -70,6 +70,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         preferences = getSharedPreferences("DOUBLE_PREFERENCES", 0);
+        Log.w("double",preferences.getString("access_token",""));
         if (preferences.getString("access_token", "").isEmpty()) {
             setContentView(R.layout.activity_main);
         }
@@ -198,7 +199,9 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                     @Override
                     public void onResponse(Response<AccessToken> response, Retrofit retrofit) {
                         if (response.body().access_token.length() > 0) {
-                            preferences.edit().putString("access_token", response.body().access_token);
+                            SharedPreferences.Editor editor = preferences.edit();
+                            editor.putString("access_token", response.body().access_token);
+                            editor.commit();
                             setContentView(R.layout.activity_main);
 
                         }

@@ -1,6 +1,7 @@
 package doubleclient.denzyldick.doubleclient;
 
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 
 import com.github.nkzawa.socketio.client.IO;
@@ -19,6 +20,10 @@ import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 
+import org.java_websocket.client.WebSocketClient;
+import org.java_websocket.handshake.ServerHandshake;
+
+import java.net.URI;
 import java.net.URISyntaxException;
 
 import doubleclient.denzyldick.doubleclient.API.Socket;
@@ -28,6 +33,8 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     SharedPreferences preferences;
+    private WebSocketClient mWebSocketClient;
+
     com.github.nkzawa.socketio.client.Socket socket;
 
     @Override
@@ -38,14 +45,12 @@ public class MainActivity extends AppCompatActivity
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        Log.w("double", "faefaef");
-        socket = new Socket().getSocket();
-        socket.connect();
+
+        connectWebSocket();
+        Log.w("DOUBLE","TESTING TESTING TESTING");
         preferences = getSharedPreferences("DOUBLE_PREFERENCES", 0);
-        Log.w("double","ddddd");
 
         createNavigation(toolbar);
-
         sendMessageListener();
     }
 
@@ -54,8 +59,8 @@ public class MainActivity extends AppCompatActivity
         sendmessage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.w("double","feafaef");
-                sendMessage(v);
+                Log.w("double", "feafaef");
+                //  sendMessage();
             }
         });
     }
@@ -88,14 +93,52 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    public void sendMessage(View view) {
-        Log.w("Double", "hll");
-        EditText edit = (EditText) findViewById(R.id.message_box);
-        String text = edit.getText().toString();
-        if (!text.isEmpty()) {
-            socket.emit(text);
+
+    private void connectWebSocket() {
+        URI uri;
+        try {
+            uri = new URI("ws://10.0.2.2:9000/socket");
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+            return;
         }
 
+        mWebSocketClient = new WebSocketClient(uri) {
+            @Override
+            public void onOpen(ServerHandshake serverHandshake) {
+                Log.i("Websocket", "Opened");
+                mWebSocketClient.send("Hello from " + Build.MANUFACTURER + " " + Build.MODEL);
+            }
+
+            @Override
+            public void onMessage(String s) {
+                final String message = s;
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+//                        TextView textView = (TextView)findViewById(R.id.messages);
+//                        textView.setText(textView.getText() + "\n" + message);
+                    }
+                });
+            }
+
+            @Override
+            public void onClose(int i, String s, boolean b) {
+                Log.i("Websocket", "Closed " + s);
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Log.i("Websocket", "Error " + e.getMessage());
+            }
+        };
+        mWebSocketClient.connect();
+    }
+
+    public void sendMessage(View view) {
+        EditText editText = (EditText)findViewById(R.id.message_box);
+        mWebSocketClient.send(editText.getText().toString());
+        editText.setText("");
     }
 
     @Override

@@ -15,7 +15,7 @@ abstract public class RestClient {
     {
         Retrofit retrofit = null;
         try {
-            retrofit = new Retrofit.Builder().baseUrl("http://192.168.0.109:9000")
+            retrofit = new Retrofit.Builder().baseUrl("http://10.0.2.2:9000")
                     .addConverterFactory(GsonConverterFactory.create())
                     .build();
         }catch (Exception e)

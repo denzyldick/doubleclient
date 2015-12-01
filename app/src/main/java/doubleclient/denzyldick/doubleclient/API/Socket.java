@@ -15,7 +15,7 @@ public class Socket {
     {
         Log.w("double", "trying to connect");
         try {
-            socket = IO.socket("http://192.168.0.103:9000/socket");
+            socket = IO.socket("http://10.0.2.2:9000/socket");
         } catch (URISyntaxException e) {
             Log.w("socket_error", e);
         }
